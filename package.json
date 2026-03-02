@@ -1,5 +1,5 @@
 {
-  "name": "repo-memory",
+  "name": "@aakashpawar/repo-memory",
   "version": "1.0.0",
   "description": "🧠 Create a persistent brain for any code repository — instant context for AI agents",
   "type": "module",
