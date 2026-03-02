@@ -1,6 +1,6 @@
 {
   "name": "@aakashpawar/repo-memory",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "🧠 Create a persistent brain for any code repository — instant context for AI agents",
   "type": "module",
   "main": "dist/cli.js",
@@ -23,9 +23,7 @@
     "repository",
     "memory",
     "developer-tools",
-    "cli",
-    "tree-sitter",
-    "ast"
+    "cli"
   ],
   "author": "Aakash Pawar (https://github.com/aakashpawar1999)",
   "license": "MIT",
@@ -47,10 +45,6 @@
     "fast-glob": "^3.3.3",
     "ignore": "^7.0.3",
     "ora": "^8.2.0",
-    "tree-sitter": "^0.22.4",
-    "tree-sitter-javascript": "^0.23.1",
-    "tree-sitter-python": "^0.23.6",
-    "tree-sitter-typescript": "^0.23.2",
     "xxhash-wasm": "^1.1.0"
   },
   "devDependencies": {
