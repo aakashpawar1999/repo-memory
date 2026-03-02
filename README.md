@@ -1,11 +1,15 @@
 # 🧠 repo-memory
 
+[![npm version](https://img.shields.io/npm/v/@aakashpawar/repo-memory.svg)](https://www.npmjs.com/package/@aakashpawar/repo-memory)
+[![license](https://img.shields.io/npm/l/@aakashpawar/repo-memory.svg)](https://github.com/aakashpawar1999/repo-memory/blob/main/LICENSE)
+[![node](https://img.shields.io/node/v/@aakashpawar/repo-memory.svg)](https://nodejs.org)
+
 > Create a persistent brain for any code repository — instant context for AI agents.
 
 **One command. Zero LLM dependency. Works offline.**
 
 ```bash
-npx repo-memory init
+npx @aakashpawar/repo-memory init
 ```
 
 repo-memory scans your codebase, parses every function/class/module, maps dependencies, detects conventions, and generates a structured `MEMORY.md` that any AI agent can instantly consume — like giving it the institutional knowledge of a super-senior developer.
@@ -21,16 +25,20 @@ Every time an AI agent starts a new session, it:
 
 **repo-memory** solves this with a single `MEMORY.md` file that persists between sessions.
 
-## Quick Start
+## Installation
 
 ```bash
 # Install globally
-npm install -g repo-memory
+npm install -g @aakashpawar/repo-memory
 
-# Or run directly with npx
-npx repo-memory init
+# Or run directly with npx (no install needed)
+npx @aakashpawar/repo-memory init
+```
 
-# Index your project
+## Quick Start
+
+```bash
+# Initialize & index your project
 cd your-project
 repo-memory init
 
@@ -186,6 +194,14 @@ repo-memory init
 
 Incremental updates (`repo-memory update`) only re-index changed files, making them near-instant.
 
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for a list of all releases and changes.
+
+## Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request on [GitHub](https://github.com/aakashpawar1999/repo-memory).
+
 ## License
 
-MIT
+MIT © [Aakash Pawar](https://github.com/aakashpawar1999)
