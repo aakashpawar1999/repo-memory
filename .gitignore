@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.repo-memory/
+*.db
+*.db-journal
+.DS_Store
