@@ -56,7 +56,7 @@ npm install -g @aakashpawar/repo-memory
 npx @aakashpawar/repo-memory init
 ```
 
-Requires **Node 18 or newer**.
+Requires **Node 22.12 or newer**.
 
 ## Quick Start
 
