@@ -51,7 +51,7 @@
     "commander": "^13.1.0",
     "fast-glob": "^3.3.3",
     "ignore": "^7.0.3",
-    "ora": "^8.2.0",
+    "ora": "^9.4.1",
     "xxhash-wasm": "^1.1.0"
   },
   "devDependencies": {
