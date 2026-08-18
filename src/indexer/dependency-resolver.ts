@@ -1,6 +1,12 @@
-import { dirname, join, resolve, extname, relative } from "node:path";
+import { posix } from "node:path";
 import type { ParsedFile, ParsedImport } from "./parser.js";
 import type { ScannedFile } from "./scanner.js";
+
+// Indexed paths are always POSIX-style (fast-glob emits forward slashes on every
+// platform), so import resolution has to stay POSIX too. The platform-native
+// join produced "src\\shared.js" on Windows, which matched nothing in the index
+// and silently emptied the whole dependency graph there.
+const { dirname, join, extname } = posix;
 
 export interface DependencyEdge {
   /** Source file path (relative) */

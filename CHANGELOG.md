@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Resolve ESM TypeScript imports: a specifier written `./foo.js` for a source file that is actually `foo.ts` now maps to that file. Previously every internal edge in an ESM TypeScript project was dropped, leaving the dependency graph, fan-in counts, and the "Critical Paths" section of `MEMORY.md` empty
 - `repo-memory --version` reported `1.0.0` regardless of the installed version — it now reads `package.json`, which is also what gets recorded in the index metadata
+- Import resolution now uses POSIX path joining. On Windows the platform-native join produced `src\shared.js` against an index that stores forward-slash paths, so no internal dependency ever resolved there and the graph was silently empty
 - `npm run lint` failed on `ignore.default()` in the scanner; the call is now type-correct
 
 ### Added
