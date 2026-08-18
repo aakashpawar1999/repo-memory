@@ -108,6 +108,17 @@ function resolveImport(
     // Try exact match first
     if (knownPaths.has(basePath)) return basePath;
 
+    // ESM TypeScript writes `./foo.js` for a source file that is actually
+    // foo.ts, so a JavaScript specifier has to be retried against the
+    // TypeScript extensions before it is treated as unresolvable.
+    const writtenExt = extname(basePath);
+    if ([".js", ".jsx", ".mjs", ".cjs"].includes(writtenExt)) {
+      const stem = basePath.slice(0, -writtenExt.length);
+      for (const ext of [".ts", ".tsx", ".mts", ".cts"]) {
+        if (knownPaths.has(stem + ext)) return stem + ext;
+      }
+    }
+
     // Try with extensions
     const extensions =
       language === "python"
