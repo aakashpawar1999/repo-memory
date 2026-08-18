@@ -26,7 +26,7 @@ sent back:
 
 ## Local development
 
-Requirements: **Node 18 or newer**.
+Requirements: **Node 22.12 or newer**.
 
 ```bash
 git clone https://github.com/aakashpawar1999/repo-memory.git
@@ -103,7 +103,7 @@ rebuilt by `init`, and that has to be spelled out in the changelog.
 3. Run `npm run lint`, `npm test`, and `npm run build`. All three must pass.
 4. Add a `CHANGELOG.md` entry under `## [Unreleased]`.
 5. Open a pull request against `develop` and fill in the template. CI runs lint,
-   test, and build on Node 18, 20, and 22.
+   test, and build on Node 22 and 24.
 6. Keep pull requests small and single-purpose — one coherent change is far
    easier to review and release.
 
