@@ -1,7 +1,8 @@
 # 🧠 repo-memory
 
 [![npm version](https://img.shields.io/npm/v/@aakashpawar/repo-memory.svg)](https://www.npmjs.com/package/@aakashpawar/repo-memory)
-[![license](https://img.shields.io/npm/l/@aakashpawar/repo-memory.svg)](https://github.com/aakashpawar1999/repo-memory/blob/main/LICENSE)
+[![CI](https://github.com/aakashpawar1999/repo-memory/actions/workflows/ci.yml/badge.svg)](https://github.com/aakashpawar1999/repo-memory/actions/workflows/ci.yml)
+[![license](https://img.shields.io/npm/l/@aakashpawar/repo-memory.svg)](./LICENSE)
 [![node](https://img.shields.io/node/v/@aakashpawar/repo-memory.svg)](https://nodejs.org)
 
 > Create a persistent brain for any code repository — instant context for AI agents.
@@ -14,6 +15,24 @@ npx @aakashpawar/repo-memory init
 
 repo-memory scans your codebase, parses every function/class/module, maps dependencies, detects conventions, and generates a structured `MEMORY.md` that any AI agent can instantly consume — like giving it the institutional knowledge of a super-senior developer.
 
+## Contents
+
+- [Why?](#why)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [CLI Reference](#cli-reference)
+- [What It Generates](#what-it-generates)
+- [Using It With AI Agents](#using-it-with-ai-agents)
+- [Supported Languages](#supported-languages)
+- [Configuration](#configuration)
+- [How It Works](#how-it-works)
+- [Performance](#performance)
+- [Limitations](#limitations)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [Security](#security)
+- [License](#license)
+
 ## Why?
 
 Every time an AI agent starts a new session, it:
@@ -25,6 +44,8 @@ Every time an AI agent starts a new session, it:
 
 **repo-memory** solves this with a single `MEMORY.md` file that persists between sessions.
 
+Everything runs locally: no API key, no model call, nothing leaves your machine.
+
 ## Installation
 
 ```bash
@@ -34,6 +55,8 @@ npm install -g @aakashpawar/repo-memory
 # Or run directly with npx (no install needed)
 npx @aakashpawar/repo-memory init
 ```
+
+Requires **Node 18 or newer**.
 
 ## Quick Start
 
@@ -54,6 +77,22 @@ repo-memory show PaymentService
 # Health check
 repo-memory doctor
 ```
+
+Commit the generated `MEMORY.md`; keep the index out of version control:
+
+```gitignore
+.repo-memory/
+```
+
+## CLI Reference
+
+| Command | What it does | Options |
+| --- | --- | --- |
+| `repo-memory init` | Full index + generate `MEMORY.md` | `-d, --dir <path>`, `-v, --verbose`, `--no-memory-file`, `--max-tokens <n>` |
+| `repo-memory update` | Re-index only changed files, regenerate `MEMORY.md` | `-d, --dir <path>`, `-v, --verbose` |
+| `repo-memory query <text>` | Full-text search over symbols | `-d, --dir <path>`, `-n, --limit <n>`, `--json` |
+| `repo-memory show <symbol>` | Symbol details plus a source snippet | `-d, --dir <path>` |
+| `repo-memory doctor` | Index health, staleness against the current commit | `-d, --dir <path>` |
 
 ## What It Generates
 
@@ -113,6 +152,8 @@ src/ (203 files)
 1. **`src/lib/api.ts`** — 28 dependents (exports: `createApiClient`, `handleApiError`)
 ```
 
+The `MEMORY.md` at the root of this repository is repo-memory's own output — it dogfoods itself.
+
 ### `.repo-memory/index.db` — Queryable SQLite Index
 
 A fast, local SQLite database with full-text search for programmatic access:
@@ -124,6 +165,23 @@ repo-memory query "authentication" --json
 # Get structured results for AI agents
 repo-memory query "error handling" --json --limit 10
 ```
+
+Each JSON result carries `file_path`, `start_line`, and `end_line`, so an agent reads exactly the range it needs instead of the whole file.
+
+## Using It With AI Agents
+
+Point your agent's instruction file at `MEMORY.md` — for Claude Code that is `CLAUDE.md`, for Cursor `.cursor/rules`, for Copilot `.github/copilot-instructions.md`:
+
+```markdown
+Read `MEMORY.md` first — it maps the codebase: key files with line numbers,
+dependency fan-in, conventions, and the build/test commands.
+
+To find a symbol instead of grepping:
+
+    repo-memory query "<term>" --json --limit 10
+```
+
+Full integration guide, including keeping the index fresh with a git hook: [`docs/AGENTS.md`](docs/AGENTS.md).
 
 ## Supported Languages
 
@@ -152,6 +210,20 @@ Create `.repo-memory.json` in your project root:
   "maxTreeDepth": 4
 }
 ```
+
+| Field | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `ignore` | `string[]` | `[]` | Extra glob patterns to skip. **Appended** to the built-in defaults, never replacing them. |
+| `maxTokens` | `number` | `32000` | Token budget for `MEMORY.md`. Output is trimmed to fit. |
+| `includeLineNumbers` | `boolean` | `true` | Emit `L12-L187` ranges for symbols. |
+| `includeSignatures` | `boolean` | `true` | Emit function and method signatures. |
+| `includeDependencies` | `boolean` | `true` | Emit the dependency graph section. |
+| `includeConventions` | `boolean` | `true` | Emit the conventions section. |
+| `minFanIn` | `number` | `0` | Minimum dependents before a file is listed as a key file. |
+| `maxKeySymbols` | `number` | `100` | Cap on symbols listed in the key files section. |
+| `maxTreeDepth` | `number` | `4` | Depth cap for the architecture map. |
+
+`.gitignore` is always honoured on top of these.
 
 ## How It Works
 
@@ -184,24 +256,52 @@ repo-memory init
  └─────────────────┘
 ```
 
+Stage-by-stage detail, including the SQLite schema: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+
 ## Performance
 
 | Repo Size           | Files       | Time |
 | ------------------- | ----------- | ---- |
-| Small (repo-memory) | 13 files    | 0.1s |
+| Small (repo-memory) | 25 files    | 0.1s |
 | Medium              | ~200 files  | ~1s  |
 | Large               | ~1000 files | ~5s  |
 
 Incremental updates (`repo-memory update`) only re-index changed files, making them near-instant.
 
-## Changelog
+## Limitations
 
-See [CHANGELOG.md](./CHANGELOG.md) for a list of all releases and changes.
+Worth knowing before you rely on it:
+
+- **Parsing is regex-based, not a real AST.** That is what keeps installation free of a native grammar toolchain, but unusual formatting can be missed. Found a case? [File it with the snippet](https://github.com/aakashpawar1999/repo-memory/issues) — it becomes a test.
+- **Search is keyword, not semantic.** FTS5 over names, signatures, and docstrings. There are no embeddings, because embeddings would mean a model.
+- **Dependencies are file-level.** Resolved from imports; there is no call graph.
+- **`MEMORY.md` is a map, not the territory.** When it disagrees with the source, the source wins — run `repo-memory update`.
+
+## Documentation
+
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — the pipeline, module by module, and the index schema
+- [`docs/AGENTS.md`](docs/AGENTS.md) — wiring `MEMORY.md` into Claude Code, Cursor, Copilot, and friends
+- [`CHANGELOG.md`](./CHANGELOG.md) — every release and what changed
+- [`CONTRIBUTING.md`](./CONTRIBUTING.md) — local development and the pull request workflow
+- [`SECURITY.md`](./SECURITY.md) — what repo-memory does with your data, and how to report a vulnerability
 
 ## Contributing
 
-Contributions are welcome! Please open an issue or submit a pull request on [GitHub](https://github.com/aakashpawar1999/repo-memory).
+Contributions are welcome — especially parser fixes, which are the cheapest kind of improvement here: send the snippet that parses wrong and it becomes a test case.
+
+```bash
+git clone https://github.com/aakashpawar1999/repo-memory.git
+cd repo-memory
+npm install
+npm run lint && npm test && npm run build
+```
+
+Read [CONTRIBUTING.md](./CONTRIBUTING.md) before opening a pull request, and note that pull requests go to `develop`. By participating you agree to the [Code of Conduct](./CODE_OF_CONDUCT.md).
+
+## Security
+
+Please do not report vulnerabilities in public issues. Use [GitHub private vulnerability reporting](https://github.com/aakashpawar1999/repo-memory/security/advisories/new) — the process and the data-handling details are in [SECURITY.md](./SECURITY.md).
 
 ## License
 
-MIT © [Aakash Pawar](https://github.com/aakashpawar1999)
+MIT © [Aakash Pawar](https://github.com/aakashpawar1999) — see [LICENSE](./LICENSE).
