@@ -46,7 +46,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "better-sqlite3": "^11.8.1",
+    "better-sqlite3": "^13.0.3",
     "chalk": "^5.4.1",
     "commander": "^13.1.0",
     "fast-glob": "^3.3.3",
