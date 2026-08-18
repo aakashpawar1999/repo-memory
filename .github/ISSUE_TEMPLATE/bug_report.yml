@@ -1,0 +1,88 @@
+name: Bug report
+description: Something does not work the way it should
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing this. If it is a **security** issue, please do not use
+        this form — see [SECURITY.md](https://github.com/aakashpawar1999/repo-memory/blob/main/SECURITY.md).
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you expect, and what did you get instead?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part
+      options:
+        - Scanning (files missed, files wrongly included)
+        - Parsing (symbols wrong or missing)
+        - Dependencies (imports resolved wrong, fan-in numbers)
+        - Conventions (project type, build/test command detection)
+        - MEMORY.md output (formatting, ranking, token budget)
+        - Query / show (search results, FTS)
+        - Install or CLI startup
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: The exact commands you ran, in order.
+      placeholder: |
+        repo-memory init
+        repo-memory query "something"
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: snippet
+    attributes:
+      label: Source snippet, if this is a parsing bug
+      description: >
+        The smallest piece of code that parses wrong. This usually becomes the
+        regression test, so it is the single most useful thing you can include.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Output of `repo-memory doctor`
+      render: text
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `repo-memory --version`, or the commit you built from.
+    validations:
+      required: true
+
+  - type: input
+    id: env
+    attributes:
+      label: Node version and OS
+      placeholder: Node 22.11.0 / macOS 15.2 arm64
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Error output, the repository's language mix, or context that might matter.
+    validations:
+      required: false

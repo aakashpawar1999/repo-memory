@@ -1,0 +1,99 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # A tag is the only thing that says which version this release is, and nothing
+  # else checks it against the package. Without this a v1.1.0 tag on a tree still
+  # declaring 1.0.3 would publish a package labelled with a version it was not
+  # built from.
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22
+          cache: npm
+      - name: Tag matches package.json
+        run: |
+          pkg_version=$(node -p "require('./package.json').version")
+          tag_version="${GITHUB_REF_NAME#v}"
+          echo "package.json: $pkg_version"
+          echo "tag:          $tag_version"
+          if [ "$pkg_version" != "$tag_version" ]; then
+            echo "::error::tag $tag_version does not match package.json $pkg_version"
+            exit 1
+          fi
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+  publish:
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Required for npm provenance.
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://registry.npmjs.org
+      - run: npm ci
+      # prepublishOnly runs the build, so dist/ is produced from this exact tree.
+      - run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  release:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      # Release titles drop the tag's leading "v": "repo-memory 1.0.3".
+      - name: Version
+        id: version
+        run: echo "number=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      # The release body is this version's CHANGELOG section verbatim, so the
+      # notes say what changed instead of linking to it.
+      - name: Notes
+        run: |
+          awk -v v="${{ steps.version.outputs.number }}" '
+            $0 ~ "^## \\[" v "\\]" { on = 1; next }
+            on && /^## \[/ { exit }
+            on && !/^\[[^]]*\]:/ { print }
+          ' CHANGELOG.md > notes.md
+          cat >> notes.md <<'EOF2'
+
+          ### Install
+
+          ```bash
+          npm install -g @aakashpawar/repo-memory@VERSION
+          # or, without installing
+          npx @aakashpawar/repo-memory@VERSION init
+          ```
+
+          Published to npm with build provenance.
+          EOF2
+          sed -i "s/VERSION/${{ steps.version.outputs.number }}/g" notes.md
+          cat notes.md
+
+      - uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3
+        with:
+          name: repo-memory ${{ steps.version.outputs.number }}
+          body_path: notes.md

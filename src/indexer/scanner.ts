@@ -95,7 +95,7 @@ export async function scanRepository(
   config: RepoMemoryConfig,
 ): Promise<ScannedFile[]> {
   // Build ignore rules
-  const ig = ignore.default();
+  const ig = ignore();
 
   // Add config ignore patterns
   ig.add(config.ignore);
