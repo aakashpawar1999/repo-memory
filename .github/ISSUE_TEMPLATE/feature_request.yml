@@ -1,0 +1,48 @@
+name: Feature request
+description: Suggest a new capability or improvement
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Two constraints shape what can be accepted: repo-memory **never calls an
+        LLM and never touches the network**, and it **does not depend on a native
+        parser toolchain**. Proposals that need either are unlikely to land.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What can't you do today? Who is it for?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: >
+        What would you add or change? Which part does it touch — the scanner, a
+        parser, the dependency resolver, the generator, or the CLI surface?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: semver
+    attributes:
+      label: SemVer impact
+      description: See CONTRIBUTING.md.
+      options:
+        - Minor — purely additive (new command, config field, language, richer output)
+        - Major — changes an existing command, the --json shape, or the SQLite schema
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Anything you ruled out, and why.
+    validations:
+      required: false

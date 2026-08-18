@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+# Least privilege for GITHUB_TOKEN regardless of the repository default.
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: ${{ matrix.os }} / node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        node: [18, 20, 22]
+        include:
+          # better-sqlite3 is a native dependency and path handling differs, so
+          # the other two platforms are covered on the current LTS.
+          - os: macos-latest
+            node: 22
+          - os: windows-latest
+            node: 22
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+      # End-to-end: index this repository with the build that was just produced.
+      # Catches breakage that unit tests miss — a bad bundle, a broken shebang,
+      # a native module that did not load.
+      - name: Self-index smoke test
+        shell: bash
+        run: |
+          node dist/cli.js init --dir .
+          test -f MEMORY.md
+          test -f .repo-memory/index.db
+          node dist/cli.js query "parseFile" --json | grep -q '"parseFile"'
+          node dist/cli.js doctor

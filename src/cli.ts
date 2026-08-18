@@ -5,6 +5,7 @@ import chalk from "chalk";
 import ora from "ora";
 import { resolve, join, basename } from "node:path";
 import { existsSync, writeFileSync, readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { loadConfig } from "./config/config.js";
 import { scanRepository, getLanguageStats } from "./indexer/scanner.js";
 import { parseFile } from "./indexer/parser.js";
@@ -21,7 +22,10 @@ import {
 import { logger, setLogLevel, LogLevel } from "./utils/logger.js";
 import { isGitRepo, getCurrentCommitHash } from "./utils/git.js";
 
-const VERSION = "1.0.0";
+// Read from package.json rather than a literal: a hardcoded copy drifts from the
+// published version, and `db.setMetadata("version", ...)` records it in the index.
+const require = createRequire(import.meta.url);
+const { version: VERSION } = require("../package.json") as { version: string };
 
 const program = new Command();
 

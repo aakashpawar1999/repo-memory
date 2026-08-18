@@ -1,6 +1,12 @@
-import { dirname, join, resolve, extname, relative } from "node:path";
+import { posix } from "node:path";
 import type { ParsedFile, ParsedImport } from "./parser.js";
 import type { ScannedFile } from "./scanner.js";
+
+// Indexed paths are always POSIX-style (fast-glob emits forward slashes on every
+// platform), so import resolution has to stay POSIX too. The platform-native
+// join produced "src\\shared.js" on Windows, which matched nothing in the index
+// and silently emptied the whole dependency graph there.
+const { dirname, join, extname } = posix;
 
 export interface DependencyEdge {
   /** Source file path (relative) */
@@ -107,6 +113,17 @@ function resolveImport(
 
     // Try exact match first
     if (knownPaths.has(basePath)) return basePath;
+
+    // ESM TypeScript writes `./foo.js` for a source file that is actually
+    // foo.ts, so a JavaScript specifier has to be retried against the
+    // TypeScript extensions before it is treated as unresolvable.
+    const writtenExt = extname(basePath);
+    if ([".js", ".jsx", ".mjs", ".cjs"].includes(writtenExt)) {
+      const stem = basePath.slice(0, -writtenExt.length);
+      for (const ext of [".ts", ".tsx", ".mts", ".cts"]) {
+        if (knownPaths.has(stem + ext)) return stem + ext;
+      }
+    }
 
     // Try with extensions
     const extensions =
